@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telegram Bot Proxy API</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        line-height: 1.6;
+        color: #333;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+      .api-endpoint {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: "Monaco", monospace;
+        margin: 1rem 0;
+      }
+      .example {
+        background: #e3f2fd;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+      }
+      .button {
+        display: inline-block;
+        background: #007bff;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 0.5rem 0;
+      }
+      .button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🤖 Telegram Bot Proxy API</h1>
+      <p>使用 Netlify Serverless Function 發送 Telegram 訊息</p>
+    </div>
+
+    <h2>API 端點</h2>
+    <div class="api-endpoint">POST /api/send-message</div>
+
+    <h2>使用方式</h2>
+    <div class="example">
+      <h3>請求範例：</h3>
+      <pre><code>{
+  "botToken": "your-bot-token",
+  "chatId": "chat-id-or-username", 
+  "message": "Hello from API! 🚀",
+  "parseMode": "HTML"
+}</code></pre>
+    </div>
+
+    <h2>快速測試</h2>
+    <div class="example">
+      <p>使用以下 curl 命令測試 API：</p>
+      <pre><code>curl -X POST https://yourdomain.netlify.app/api/send-message \
+  -H "Content-Type: application/json" \
+  -d '{
+    "botToken": "YOUR_BOT_TOKEN",
+    "chatId": "YOUR_CHAT_ID",
+    "message": "測試訊息"
+  }'</code></pre>
+    </div>
+
+    <h2>文件</h2>
+    <a href="https://github.com/cpsc2fe/tg-proxy" class="button"
+      >查看 GitHub 儲存庫</a
+    >
+
+    <script>
+      // 簡單的測試介面
+      function createTestForm() {
+        const container = document.createElement("div");
+        container.innerHTML = `
+                <h2>線上測試</h2>
+                <div class="example">
+                    <form id="testForm">
+                        <p>
+                            <label>Bot Token:</label><br>
+                            <input type="text" id="botToken" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0;" placeholder="1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh">
+                        </p>
+                        <p>
+                            <label>Chat ID:</label><br>
+                            <input type="text" id="chatId" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0;" placeholder="123456789 或 @username">
+                        </p>
+                        <p>
+                            <label>訊息:</label><br>
+                            <textarea id="message" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0; height: 80px;" placeholder="要發送的訊息..."></textarea>
+                        </p>
+                        <button type="submit" class="button">發送測試訊息</button>
+                    </form>
+                    <div id="result" style="margin-top: 1rem;"></div>
+                </div>
+            `;
+
+        document.body.appendChild(container);
+
+        document
+          .getElementById("testForm")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const botToken = document.getElementById("botToken").value;
+            const chatId = document.getElementById("chatId").value;
+            const message = document.getElementById("message").value;
+            const resultDiv = document.getElementById("result");
+
+            if (!botToken || !chatId || !message) {
+              resultDiv.innerHTML =
+                '<p style="color: red;">請填寫所有必填欄位</p>';
+              return;
+            }
+
+            resultDiv.innerHTML = "<p>發送中...</p>";
+
+            try {
+              const response = await fetch("/api/send-message", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  botToken,
+                  chatId,
+                  message,
+                }),
+              });
+
+              const result = await response.json();
+
+              if (result.success) {
+                resultDiv.innerHTML = `<p style="color: green;">✅ 訊息發送成功！<br>訊息 ID: ${result.messageId}</p>`;
+              } else {
+                resultDiv.innerHTML = `<p style="color: red;">❌ 發送失敗: ${result.error}</p>`;
+              }
+            } catch (error) {
+              resultDiv.innerHTML = `<p style="color: red;">❌ 請求錯誤: ${error.message}</p>`;
+            }
+          });
+      }
+
+      // 載入測試表單
+      createTestForm();
+    </script>
+  </body>
+</html>

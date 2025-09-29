@@ -11,8 +11,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Vercel
-.vercel
+# Netlify
+.netlify/
+dist/
 
 # IDE
 .vscode/
@@ -25,5 +26,19 @@ yarn-error.log*
 Thumbs.db
 
 # Logs
-logs/
 *.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Cache
+.cache/
+.parcel-cache/

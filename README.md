@@ -1,105 +1,155 @@
-# Telegram Bot Proxy API
+# Telegram Bot Proxy - Netlify Serverless Function
 
-這是一個基於 Vercel Serverless Functions 的 Telegram Bot 訊息代理 API，允許你通過 HTTP 請求來發送 Telegram 訊息。
+這是一個基於 Netlify serverless function 的 API 服務，可以讓你通過 HTTP 請求來控制特定的 Telegram bot 發送訊息。
 
-## 功能特色
+## 功能特點
 
-- 🚀 基於 Vercel Serverless Functions，部署簡單
-- 🔧 支援任意 Telegram Bot Token
-- 📱 支援發送到任意聊天室或用戶
-- 🎨 支援 HTML 和 Markdown 格式
-- 🔒 包含錯誤處理和參數驗證
-- 🌐 支援 CORS 跨域請求
+- 🚀 使用 Netlify serverless functions，無需維護伺服器
+- 📱 支援發送訊息給個人、群組或頻道
+- 🔒 支援多種 bot token，每次請求都可以指定不同的 bot
+- 🎨 支援 HTML、Markdown 等訊息格式
+- ⚡ 快速部署，零配置
+- 🌍 自動 CORS 處理，支援跨域請求
 
 ## 快速開始
 
-### 1. 部署到 Vercel
+### 1. 部署到 Netlify
 
-1. Fork 或下載此專案
-2. 在 Vercel 中導入專案
-3. 部署完成後，你會得到一個類似 `https://your-project.vercel.app` 的 URL
+1. Fork 這個專案到你的 GitHub
+2. 在 [Netlify](https://netlify.com) 中連接你的 GitHub 儲存庫
+3. 部署會自動完成
 
-### 2. 獲取 Telegram Bot Token
+或者使用 Netlify CLI：
+
+```bash
+# 安裝依賴
+npm install
+
+# 本地開發
+npm run dev
+
+# 部署
+netlify deploy --prod
+```
+
+### 2. 取得 Telegram Bot Token
 
 1. 在 Telegram 中找到 [@BotFather](https://t.me/BotFather)
-2. 發送 `/newbot` 建立新的 Bot
-3. 按照指示設定 Bot 名稱和用戶名
-4. 獲取 Bot Token（格式：`123456789:ABCdefGhIJKlmNOPQrsTUVwxyZ`）
+2. 發送 `/newbot` 建立新的 bot
+3. 按照指示操作，取得 bot token
+4. 記下你的 bot token（格式：`1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh`）
 
-### 3. 獲取聊天室 ID
+### 3. 取得 Chat ID
 
-#### 方法一：私人聊天
+**對於個人聊天：**
 
-1. 向你的 Bot 發送任意訊息
-2. 訪問 `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+1. 向你的 bot 發送一條訊息
+2. 訪問：`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
 3. 在回應中找到 `chat.id`
 
-#### 方法二：群組聊天
+**對於群組或頻道：**
 
-1. 將 Bot 加入群組
-2. 在群組中發送包含 Bot 的訊息（例如：`@your_bot_name hello`）
-3. 訪問 `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-4. 在回應中找到 `chat.id`（群組 ID 通常是負數）
+1. 將 bot 加入群組或頻道
+2. 在群組中發送一條訊息（提及 bot）
+3. 訪問：`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+4. 在回應中找到 `chat.id`（通常是負數）
 
-## API 使用方法
+## 環境變數設定 (選用)
 
-### 端點
+你可以設定環境變數作為預設值，這樣 API 請求就更簡潔：
 
-```text
-POST https://your-project.vercel.app/api/send-message
+1. 複製 `.env.example` 為 `.env`：
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. 編輯 `.env` 檔案，填入你的預設值：
+   ```bash
+   BOT_TOKEN=你的bot-token
+   CHAT_ID=你的預設chat-id
+   ```
+
+## API 使用方式
+
+### 發送訊息
+
+**端點：** `POST /api/send-message`
+
+**三種使用模式：**
+
+#### 模式 1: 使用環境變數預設值
+
+如果已設定環境變數，只需要傳送訊息：
+
+```json
+{
+  "message": "要發送的訊息內容",
+  "parseMode": "HTML"
+}
 ```
 
-### 請求參數
+#### 模式 2: 完整參數 (推薦)
 
-| 參數                    | 類型          | 必需 | 說明                                     |
-| ----------------------- | ------------- | ---- | ---------------------------------------- |
-| `botToken`              | string        | ✅   | Telegram Bot Token                       |
-| `chatId`                | string/number | ✅   | 目標聊天室 ID 或用戶名                   |
-| `message`               | string        | ✅   | 要發送的訊息內容                         |
-| `parseMode`             | string        | ❌   | 訊息格式，預設為 `HTML`，可選 `Markdown` |
-| `disableWebPagePreview` | boolean       | ❌   | 是否禁用網頁預覽，預設為 `false`         |
+```json
+{
+  "botToken": "your-bot-token",
+  "chatId": "chat-id-or-username",
+  "message": "要發送的訊息內容",
+  "parseMode": "HTML"
+}
+```
 
-### 請求範例
+#### 模式 3: 部分覆蓋環境變數
 
-#### 基本訊息
+```json
+{
+  "chatId": "other-chat-id",
+  "message": "發送到不同聊天的訊息"
+}
+```
+
+**參數說明：**
+
+- `botToken` (必填): Telegram bot 的 token
+- `chatId` (必填): 目標聊天的 ID 或 username
+  - 個人聊天：正數 ID，例如：`123456789`
+  - 群組/頻道：負數 ID，例如：`-1001234567890`
+  - 公開頻道：username，例如：`@mychannel`
+- `message` (必填): 要發送的訊息內容
+- `parseMode` (選填): 訊息格式，支援：
+  - `HTML`: HTML 格式
+  - `Markdown`: Markdown 格式
+  - `MarkdownV2`: Markdown V2 格式
+
+### 範例請求
+
+#### 使用 curl
 
 ```bash
-curl -X POST https://your-project.vercel.app/api/send-message \
-  -H "Content-Type: application/json" \
+curl -X POST https://your-netlify-site.netlify.app/api/send-message \\
+  -H "Content-Type: application/json" \\
   -d '{
-    "botToken": "123456789:ABCdefGhIJKlmNOPQrsTUVwxyZ",
-    "chatId": "987654321",
-    "message": "Hello from Vercel!"
+    "botToken": "1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh",
+    "chatId": "123456789",
+    "message": "Hello from API! 🚀"
   }'
 ```
 
-#### HTML 格式訊息
-
-```bash
-curl -X POST https://your-project.vercel.app/api/send-message \
-  -H "Content-Type: application/json" \
-  -d '{
-    "botToken": "123456789:ABCdefGhIJKlmNOPQrsTUVwxyZ",
-    "chatId": "987654321",
-    "message": "<b>粗體</b> 和 <i>斜體</i> 文字",
-    "parseMode": "HTML"
-  }'
-```
-
-#### JavaScript (Fetch API)
+#### 使用 JavaScript (fetch)
 
 ```javascript
 const response = await fetch(
-  "https://your-project.vercel.app/api/send-message",
+  "https://your-netlify-site.netlify.app/api/send-message",
   {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      botToken: "123456789:ABCdefGhIJKlmNOPQrsTUVwxyZ",
-      chatId: "987654321",
-      message: "來自 JavaScript 的訊息！",
+      botToken: "your-bot-token",
+      chatId: "your-chat-id",
+      message: "Hello from JavaScript! 👋",
       parseMode: "HTML",
     }),
   }
@@ -109,16 +159,16 @@ const result = await response.json();
 console.log(result);
 ```
 
-#### Python
+#### 使用 Python (requests)
 
 ```python
 import requests
 
-url = "https://your-project.vercel.app/api/send-message"
+url = 'https://your-netlify-site.netlify.app/api/send-message'
 data = {
-    "botToken": "123456789:ABCdefGhIJKlmNOPQrsTUVwxyZ",
-    "chatId": "987654321",
-    "message": "來自 Python 的訊息！"
+    'botToken': 'your-bot-token',
+    'chatId': 'your-chat-id',
+    'message': 'Hello from Python! 🐍'
 }
 
 response = requests.post(url, json=data)
@@ -132,8 +182,8 @@ print(response.json())
   "success": true,
   "message": "Message sent successfully",
   "messageId": 123,
-  "chatId": 987654321,
-  "date": 1640995200
+  "chatId": 456789,
+  "timestamp": "2023-12-01T10:30:00.000Z"
 }
 ```
 
@@ -141,105 +191,72 @@ print(response.json())
 
 ```json
 {
-  "error": "Missing bot token",
-  "message": "botToken is required in the request body"
+  "success": false,
+  "error": "Invalid bot token",
+  "timestamp": "2023-12-01T10:30:00.000Z"
 }
 ```
 
-## 本地開發
+## 常見錯誤處理
 
-### 安裝依賴
+| 錯誤碼 | 說明         | 解決方法                     |
+| ------ | ------------ | ---------------------------- |
+| 400    | Bad Request  | 檢查請求參數是否正確         |
+| 401    | Unauthorized | 檢查 bot token 是否正確      |
+| 403    | Forbidden    | Bot 被用戶封鎖或從群組中移除 |
+| 404    | Not Found    | 聊天不存在或 bot 無法訪問    |
 
-```bash
-npm install
-```
+## HTML 訊息格式範例
 
-### 本地運行
+當使用 `"parseMode": "HTML"` 時，你可以使用以下標籤：
 
-```bash
-npm run dev
-```
-
-API 將在 `http://localhost:3000/api/send-message` 運行。
-
-### 測試
-
-```bash
-curl -X POST http://localhost:3000/api/send-message \
-  -H "Content-Type: application/json" \
-  -d '{
-    "botToken": "your_bot_token",
-    "chatId": "your_chat_id",
-    "message": "測試訊息"
-  }'
+```json
+{
+  "botToken": "your-bot-token",
+  "chatId": "your-chat-id",
+  "message": "<b>粗體文字</b>\\n<i>斜體文字</i>\\n<u>底線文字</u>\\n<a href='https://example.com'>連結</a>",
+  "parseMode": "HTML"
+}
 ```
 
 ## 安全注意事項
 
-⚠️ **重要安全提醒：**
+1. **不要在客戶端暴露 bot token**：請在伺服器端或環境變數中管理
+2. **使用 HTTPS**：確保所有請求都通過 HTTPS 傳輸
+3. **限制存取**：考慮添加身份驗證或 API 金鑰驗證
+4. **速率限制**：注意 Telegram API 的速率限制（每分鐘最多 30 條訊息）
 
-1. **不要在前端代碼中暴露 Bot Token**
-2. **考慮添加 API 認證機制**
-3. **在生產環境中使用 HTTPS**
-4. **定期更換 Bot Token**
-5. **監控 API 使用情況**
+## 本地開發
 
-## 錯誤碼說明
+1. 複製專案：
 
-| HTTP 狀態碼 | 說明                             |
-| ----------- | -------------------------------- |
-| 200         | 訊息發送成功                     |
-| 400         | 請求參數錯誤或 Telegram API 錯誤 |
-| 405         | 不支援的 HTTP 方法               |
-| 500         | 服務器內部錯誤                   |
+   ```bash
+   git clone https://github.com/your-username/tg-proxy.git
+   cd tg-proxy
+   ```
 
-## 進階功能
+2. 安裝依賴：
 
-### 支援的訊息格式
+   ```bash
+   npm install
+   ```
 
-#### HTML 格式 (預設)
+3. 啟動本地開發伺服器：
 
-```html
-<b>粗體</b>
-<i>斜體</i>
-<u>底線</u>
-<s>刪除線</s>
-<code>程式碼</code>
-<pre>程式碼區塊</pre>
-<a href="https://example.com">連結</a>
-```
+   ```bash
+   npm run dev
+   ```
 
-#### Markdown 格式
+4. API 將在 `http://localhost:8888/api/send-message` 可用
 
-```markdown
-_粗體_
-_斜體_
-`程式碼`
-[連結](https://example.com)
-```
+## 貢獻
 
-## 故障排除
-
-### 常見問題
-
-1. **Bot Token 無效**
-
-   - 檢查 Token 格式是否正確
-   - 確認 Bot 是否已被刪除
-
-2. **聊天室 ID 錯誤**
-
-   - 確認 Chat ID 格式正確
-   - 群組 ID 通常為負數
-
-3. **Bot 無法發送訊息**
-   - 確認用戶已啟動與 Bot 的對話
-   - 確認 Bot 已被加入群組且有發言權限
+歡迎提交 Issue 和 Pull Request！
 
 ## 授權
 
 MIT License
 
-## 貢獻
+## 聯絡資訊
 
-歡迎提交 Issue 和 Pull Request！
+如有問題，請在 GitHub 上提交 Issue。

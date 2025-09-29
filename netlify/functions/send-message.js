@@ -10,7 +10,8 @@ const axios = require("axios");
  *   "botToken": "your-bot-token",
  *   "chatId": "chat-id-or-username",
  *   "message": "message-to-send",
- *   "parseMode": "HTML" // optional: HTML, Markdown, MarkdownV2
+ *   "parseMode": "HTML", // optional: HTML, Markdown, MarkdownV2
+ *   "threadId": 123 // optional: message thread ID for topics in groups
  * }
  */
 
@@ -52,6 +53,7 @@ exports.handler = async (event, context) => {
     const chatId = body.chatId || process.env.CHAT_ID;
     const message = body.message;
     const parseMode = body.parseMode;
+    const threadId = body.threadId;
 
     // Validate required fields
     if (!botToken) {
@@ -65,6 +67,7 @@ exports.handler = async (event, context) => {
             botToken: "your-bot-token",
             chatId: "chat-id-or-username",
             message: "Hello from Telegram bot!",
+            threadId: 6111, // optional
           },
         }),
       };
@@ -81,6 +84,7 @@ exports.handler = async (event, context) => {
             botToken: "your-bot-token",
             chatId: "chat-id-or-username",
             message: "Hello from Telegram bot!",
+            threadId: 123, // optional
           },
         }),
       };
@@ -96,6 +100,7 @@ exports.handler = async (event, context) => {
             botToken: "your-bot-token",
             chatId: "chat-id-or-username",
             message: "Hello from Telegram bot!",
+            threadId: 6111, // optional
           },
         }),
       };
@@ -107,6 +112,7 @@ exports.handler = async (event, context) => {
     const payload = {
       chat_id: chatId,
       text: message,
+      message_thread_id: threadId,
     };
 
     // Add parse mode if specified

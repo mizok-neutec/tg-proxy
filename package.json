@@ -1,0 +1,27 @@
+{
+  "name": "tg-proxy",
+  "version": "1.0.0",
+  "description": "Telegram Bot Message Proxy API for Vercel",
+  "main": "api/send-message.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step needed for serverless functions'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "proxy",
+    "vercel",
+    "serverless",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

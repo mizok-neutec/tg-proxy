@@ -13,7 +13,6 @@
   status = 200
   force = true
 
-#（可留可不留）這些 header 通常也會在 function 裡自己設
 [[headers]]
   for = "/api/*"
   [headers.values]

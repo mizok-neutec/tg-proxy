@@ -61,7 +61,8 @@
   "botToken": "your-bot-token",
   "chatId": "chat-id-or-username", 
   "message": "Hello from API! 🚀",
-  "parseMode": "HTML"
+  "parseMode": "HTML",
+  "threadId": 123
 }</code></pre>
     </div>
 
@@ -72,8 +73,9 @@
   -H "Content-Type: application/json" \
   -d '{
     "botToken": "YOUR_BOT_TOKEN",
-    "chatId": "YOUR_CHAT_ID",
-    "message": "測試訊息"
+    "chatId": "YOUR_CHAT_ID", 
+    "message": "測試訊息",
+    "threadId": 123
   }'</code></pre>
     </div>
 
@@ -99,6 +101,10 @@
                             <input type="text" id="chatId" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0;" placeholder="123456789 或 @username">
                         </p>
                         <p>
+                            <label>Thread ID (選用):</label><br>
+                            <input type="text" id="threadId" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0;" placeholder="訊息串 ID (僅適用於群組主題)">
+                        </p>
+                        <p>
                             <label>訊息:</label><br>
                             <textarea id="message" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0; height: 80px;" placeholder="要發送的訊息..."></textarea>
                         </p>
@@ -117,6 +123,7 @@
 
             const botToken = document.getElementById("botToken").value;
             const chatId = document.getElementById("chatId").value;
+            const threadId = document.getElementById("threadId").value;
             const message = document.getElementById("message").value;
             const resultDiv = document.getElementById("result");
 
@@ -129,16 +136,23 @@
             resultDiv.innerHTML = "<p>發送中...</p>";
 
             try {
+              const requestBody = {
+                botToken,
+                chatId,
+                message,
+              };
+
+              // 只有在 threadId 有值時才加入
+              if (threadId && threadId.trim()) {
+                requestBody.threadId = parseInt(threadId.trim());
+              }
+
               const response = await fetch("/api/send-message", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                  botToken,
-                  chatId,
-                  message,
-                }),
+                body: JSON.stringify(requestBody),
               });
 
               const result = await response.json();
